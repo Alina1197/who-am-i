@@ -1,18 +1,28 @@
 package com.eleks.academy.whoami.core;
 
+import java.util.concurrent.Future;
+
 public interface Player {
 
-	String getName();
+	Future<String> getName();
 	
+	Future<String> suggestCharacter();
+
+	// TODO: return Future<String>
 	String getQuestion();
 	
-	String answerQuestion(String question, Character character);
+	// TODO: return Future<String>
+	String answerQuestion(String question, String character);
 	
+	// TODO: return Future<String>
 	String getGuess();
 	
+	// TODO: return Future<String>
 	boolean isReadyForGuess();
 
-	String answerGuess(String guess, Character character);
-
-    void setCorrectAnswers(String question);
+	// TODO: return Future<String>
+	String answerGuess(String guess, String character);
+	
+	void close();
+	
 }

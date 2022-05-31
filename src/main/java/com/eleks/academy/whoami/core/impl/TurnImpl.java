@@ -31,4 +31,7 @@ public class TurnImpl implements Turn {
 	public void changeTurn() {
 		this.currentPlayerIndex = this.currentPlayerIndex + 1 >= this.players.size() ? 0 : this.currentPlayerIndex + 1; 
 	}
+	
+	
+
 }

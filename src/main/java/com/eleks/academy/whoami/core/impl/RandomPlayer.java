@@ -1,105 +1,80 @@
 package com.eleks.academy.whoami.core.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
-import com.eleks.academy.whoami.core.Character;
 import com.eleks.academy.whoami.core.Player;
 
 public class RandomPlayer implements Player {
 
-	private final String name;
-	private Map <String, List <String>> availableQuestions;
-	private Iterator <String> keysIterator;
-	private List<String> values =  new ArrayList<>();
-	private List<String> correctAnswers = new ArrayList<>();
-	private Map<String, List<String>> availableGuesses;
-
-	public RandomPlayer(String name, Map <String, List <String>> availableQuestions, Map<String, List<String>> availableGuesses) {
+	private String name;
+	private final Collection<String> characterPool;
+	private List<String> availableQuestions;
+	private List<String> availableGuesses;
+	
+	public RandomPlayer(String name, Collection<String> characterPool, List<String> availableQuestions, List<String> availableGuesses) {
 		this.name = name;
-		this.availableQuestions = new HashMap<>(availableQuestions);
-		this.availableGuesses = new HashMap<>(availableGuesses);
-		keysIterator = availableQuestions.keySet().iterator();
+		this.characterPool = Objects.requireNonNull(characterPool);
+		this.availableQuestions = new ArrayList<>(availableQuestions);
+		this.availableGuesses = new ArrayList<>(availableGuesses);
 	}
 	
 	@Override
-	public String getName() {
-		return this.name;
+	public Future<String> getName() {
+		return CompletableFuture.completedFuture(this.name);
 	}
 
 	@Override
 	public String getQuestion() {
-		if(this.values.isEmpty()) {
-			if (this.keysIterator.hasNext()) {
-				this.values = new ArrayList<>(this.availableQuestions.remove(keysIterator.next()));
-			}
-		}
-		String question = values.remove(0);
-		System.out.println("Player: " + this.name + ". Asks: Am I a " + question + "?");
+		String question = availableQuestions.remove(0);
+		System.out.println("Player: " + name + ". Asks: " + question);
 		return question;
 	}
 
 	@Override
-	public String answerQuestion(String question, Character character){
-		String answer = "No";
-		for (var feature : character.getCharacteristics()){
-			if(question.equalsIgnoreCase(feature)){
-				answer = "Yes";
-				break;
-			}
-		}
-		System.out.println("Player: " + this.name + ". Answers: " + answer);
+	public String answerQuestion(String question, String character) {
+		String answer = Math.random() < 0.5 ? "Yes" : "No";
+		System.out.println("Player: " + name + ". Answers: " + answer);
 		return answer;
 	}
+	
 
 	@Override
-	public String answerGuess(String guess, Character character) {
-		String answer = "No";
-		if (character.getName().equalsIgnoreCase(guess)){
-			answer = "Yes";
-		}
-		System.out.println("Player: " + this.name + ". Answers: " + answer);
+	public String answerGuess(String guess, String character) {
+		String answer = Math.random() < 0.5 ? "Yes" : "No";
+		System.out.println("Player: " + name + ". Answers: " + answer);
 		return answer;
 	}
 
 	@Override
 	public String getGuess() {
-		int correct = 0;
-		String quess = "";
-		this.keysIterator = this.availableGuesses.keySet().iterator();
-		while (this.keysIterator.hasNext()){
-			String temp = keysIterator.next();
-			this.values = availableGuesses.get(temp);
-			quess = values.get(0);
-			for (var value: values){
-				for (var answer : this.correctAnswers){
-					if(answer.equalsIgnoreCase(value)) {
-						correct++;
-						break;
-					}
-				}
-			}
-			if(correct > (values.size() - 1) / 2) {
-				System.out.println("Player: "+ this.name + " Am I " + quess + "?");
-				return quess;
-			}
-			correct = 0;
-		}
-		System.out.println("Player: "+ this.name + "Am I " + quess);
-		return quess;
+		int randomPos = (int)(Math.random() * this.availableGuesses.size()); 
+		String guess = this.availableGuesses.remove(randomPos);
+		System.out.println("Player: " + name + ". Guesses: Am I " + guess);
+		return guess;
 	}
 
 	@Override
 	public boolean isReadyForGuess() {
-		return this.availableQuestions.isEmpty();
+		return availableQuestions.isEmpty();
 	}
 
 	@Override
-	public void setCorrectAnswers(String characteristic){
-		this.correctAnswers.add(characteristic);
-		if(this.keysIterator.hasNext()) this.values = new ArrayList<>(this.availableQuestions.remove(keysIterator.next()));
+	public Future<String> suggestCharacter() {
+		// TODO: remove a suggestion from the collection
+		return CompletableFuture.completedFuture(characterPool.iterator().next());
 	}
+
+	@Override
+	public void close() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	
+	
 }

@@ -1,44 +1,28 @@
 package com.eleks.academy.whoami;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import com.eleks.academy.whoami.core.Character;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+import com.eleks.academy.whoami.configuration.ContextConfig;
+import com.eleks.academy.whoami.configuration.ServerProperties;
 import com.eleks.academy.whoami.core.Game;
-import com.eleks.academy.whoami.core.impl.CharacterCreator;
-import com.eleks.academy.whoami.core.impl.QuestionCreator;
-import com.eleks.academy.whoami.core.impl.RandomGame;
-import com.eleks.academy.whoami.core.impl.RandomPlayer;
+import com.eleks.academy.whoami.networking.client.ClientPlayer;
+import com.eleks.academy.whoami.networking.server.Server;
+import com.eleks.academy.whoami.networking.server.ServerImpl;
 
-public class App{
-	public static void main(String[] args) {
-		System.out.println("Game Init!");
-		int numberOfCharacters = 4;
-		int numberOfPlayers = 2;
-		List <Character> characters = new ArrayList<>();
-		for (int i = 0; i < numberOfCharacters; i++) {
-			characters.add(new CharacterCreator());
-		}
-		QuestionCreator questions = new QuestionCreator();
-		Map <String,List <String>> guessess = new HashMap<>();
-		for(Character character : characters) {
-			guessess.put(character.getName(), character.getCharacteristics());
-		}
+public class App {
 
-		Game game = new RandomGame(characters);
-		for (int i = 0; i < numberOfPlayers; i++) {
-			game.addPlayer(new RandomPlayer("Test " + i, questions.getQuestions(), guessess));
-		}
-		game.assignCharacters();
-		game.initGame();
-		while (!game.isFinished()) {
-			boolean turnResult = game.makeTurn();
-			while (turnResult) {
-				turnResult = game.makeTurn();
-			}
-			game.changeTurn();
-		}
+	public static void main(String[] args) throws IOException {
+		ApplicationContext context = new AnnotationConfigApplicationContext(ContextConfig.class);
+		ServerProperties properties = context.getBean(ServerProperties.class);
+		Server server = context.getBean(Server.class);
+
+		Game game = server.startGame();
+		game.play();
 	}
+
 }
