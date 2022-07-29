@@ -11,7 +11,6 @@ import com.eleks.academy.whoami.model.request.CharacterSuggestion;
 import com.eleks.academy.whoami.model.request.Message;
 import com.eleks.academy.whoami.model.response.PlayerDetails;
 import com.eleks.academy.whoami.model.response.TurnDetails;
-import com.eleks.academy.whoami.repository.HistoryChat;
 
 import java.time.Instant;
 import java.util.*;
@@ -184,7 +183,7 @@ public class PersistentGame {
         }
 
         if (answeringPlayer.getPlayerState().equals(PlayerState.ANSWER_QUESTION)) {
-            playersAnswers.add(questionAnswer);
+            this.playersAnswers.add(questionAnswer);
             answeringPlayer.setEnteredAnswer(true);
             answeringPlayer.setPlayerAnswer(String.valueOf(questionAnswer));
 
@@ -249,7 +248,7 @@ public class PersistentGame {
         }
 
         if (answeringPlayer.getPlayerState().equals(PlayerState.ANSWER_GUESS)) {
-            playersAnswers.add(askQuestion);
+            this.playersAnswers.add(askQuestion);
             answeringPlayer.setEnteredAnswer(true);
             answeringPlayer.setPlayerAnswer(String.valueOf(askQuestion));
 
@@ -277,10 +276,10 @@ public class PersistentGame {
                     askingPlayer.setPlayerState(PlayerState.GAME_WINNER);
                     this.winners.add(askingPlayer);
                     deletePlayer(askingPlayer.getId());
-                    if(this.players.size() == 1){
+                    if (this.players.size() == 1) {
                         players.get(0).setPlayerState(PlayerState.GAME_LOOSER);
                     }
-                } else{
+                } else {
                     this.turn = this.turn.changeTurn();
                 }
             } else {
@@ -299,7 +298,7 @@ public class PersistentGame {
                     .findFirst()
                     .orElseThrow(() -> new PlayerNotFoundException(String.format(PLAYER_NOT_FOUND, playerId)));
 
-            if (!leavingPlayer.isEnteredAnswer() && !leavingPlayer.isEnteredQuestion()) {
+            if (!leavingPlayer.isEnteredAnswer() && !leavingPlayer.isEnteredQuestion() && this.turn.getCurrentPlayer().isEnteredQuestion()) {
                 if (leavingPlayer.getPlayerState().equals(PlayerState.ANSWER_QUESTION)) {
                     answerQuestion(playerId, QuestionAnswer.DONT_KNOW);
                 }
@@ -307,6 +306,9 @@ public class PersistentGame {
                     answerGuessingQuestion(playerId, QuestionAnswer.DONT_KNOW);
                 }
             }
+        }
+        if(!this.turn.getCurrentPlayer().isEnteredQuestion()){
+            this.playersLeft = this.players.size() - 1;
         }
 
         this.players.removeIf(player -> player.getId().equals(playerId));
@@ -391,18 +393,39 @@ public class PersistentGame {
                 .findFirst()
                 .orElseThrow(() -> new PlayerNotFoundException(String.format(PLAYER_NOT_FOUND, playerId)));
 
-        if (inactivePlayer.getPlayerState().equals(PlayerState.ANSWER_QUESTION)) {
-            inactivePlayer.incrementInactiveCounter();
+        if (inactivePlayer.getPlayerState().equals(PlayerState.ANSWER_QUESTION) || inactivePlayer.getPlayerState().equals(PlayerState.ANSWER_GUESS)) {
+            if (this.turn.getCurrentPlayer().isEnteredQuestion()) {
+                inactivePlayer.incrementInactiveCounter();
 
-            if (this.turn.getCurrentPlayer().getPlayerState().equals(PlayerState.ASK_QUESTION)) {
-                answerQuestion(playerId, QuestionAnswer.DONT_KNOW);
-            } else if (this.turn.getCurrentPlayer().getPlayerState().equals(PlayerState.GUESSING)) {
-                answerGuessingQuestion(playerId, QuestionAnswer.DONT_KNOW);
+                if (this.turn.getCurrentPlayer().getPlayerState().equals(PlayerState.ASK_QUESTION)) {
+                    answerQuestion(playerId, QuestionAnswer.DONT_KNOW);
+                } else if (this.turn.getCurrentPlayer().getPlayerState().equals(PlayerState.GUESSING)) {
+                    answerGuessingQuestion(playerId, QuestionAnswer.DONT_KNOW);
+                }
             }
-
             return inactivePlayer.getInactiveCounter() == 3;
-        } else {
-            return true;
+        }
+        if(inactivePlayer.getPlayerState().equals(PlayerState.ASK_QUESTION) || inactivePlayer.getPlayerState().equals(PlayerState.GUESSING)){
+            this.playersLeft = this.players.size() - 1;
+        }
+        return true;
+    }
+
+
+    public void makingWinner(String playerId) {
+        var leavingPlayer = this.players
+                .stream()
+                .filter(player -> player.getId().equals(playerId))
+                .findFirst()
+                .orElseThrow(() -> new PlayerNotFoundException(String.format(PLAYER_NOT_FOUND, playerId)));
+
+        if (!(leavingPlayer.getPlayerState().equals(PlayerState.GAME_WINNER))) {
+            for (var player : this.players) {
+                if (!player.getId().equals(playerId)) {
+                    player.setPlayerState(PlayerState.GAME_WINNER);
+                    this.winners.add(player);
+                }
+            }
         }
     }
 

@@ -15,6 +15,8 @@ public interface GameRepository {
 
     List<PersistentGame> findAllGames();
 
-    void deleteGame (String gameId);
+    void deleteGame(String gameId);
+
+    void quickDeleteGame(String gameId);
 
 }

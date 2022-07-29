@@ -13,7 +13,7 @@ import com.eleks.academy.whoami.model.response.GameDetails;
 import com.eleks.academy.whoami.model.response.PlayerDetails;
 import com.eleks.academy.whoami.model.response.TurnDetails;
 import com.eleks.academy.whoami.repository.GameRepository;
-import com.eleks.academy.whoami.repository.HistoryChat;
+import com.eleks.academy.whoami.core.impl.HistoryChat;
 import com.eleks.academy.whoami.service.GameService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -139,12 +139,12 @@ public class GameServiceImpl implements GameService {
 
 
     @Override
-    public void answerGuessingQuestion(String gameId, String playerId, QuestionAnswer answerQuess) {
+    public void answerGuessingQuestion(String gameId, String playerId, QuestionAnswer answerGuess) {
         PersistentGame game = checkGameExistence(gameId);
         if (game.getStatus().equals(GameStatus.GAME_IN_PROGRESS)) {
-            game.answerGuessingQuestion(playerId, answerQuess);
+            game.answerGuessingQuestion(playerId, answerGuess);
         }
-        if(game.getPLayers().size() == 1){
+        if (game.getPLayers().size() == 1) {
             this.gameRepository.deleteGame(gameId);
         }
     }
@@ -165,10 +165,13 @@ public class GameServiceImpl implements GameService {
     @Override
     public void leaveGame(String gameId, String playerId) {
         PersistentGame game = checkGameExistence(gameId);
+        if (game.getPLayers().size() == 2) {
+            game.makingWinner(playerId);
+        }
         game.deletePlayer(playerId);
-        if (game.getPLayers().size() <= 3 && !game.getStatus().equals(GameStatus.GAME_IN_PROGRESS))
-            this.gameRepository.deleteGame(gameId);
-        if(game.getPLayers().size() == 1)
+        if (game.getPLayers().size() <= 3 && !game.getStatus().equals(GameStatus.GAME_IN_PROGRESS) && !game.getStatus().equals(GameStatus.WAITING_FOR_PLAYERS))
+            this.gameRepository.quickDeleteGame(gameId);
+        if (game.getPLayers().size() == 1 && !game.getStatus().equals(GameStatus.WAITING_FOR_PLAYERS))
             this.gameRepository.deleteGame(gameId);
     }
 

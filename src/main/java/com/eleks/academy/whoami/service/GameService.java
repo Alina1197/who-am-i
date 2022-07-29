@@ -1,7 +1,6 @@
 package com.eleks.academy.whoami.service;
 
 import com.eleks.academy.whoami.core.impl.PersistentGame;
-import com.eleks.academy.whoami.core.impl.PersistentPlayer;
 import com.eleks.academy.whoami.enums.QuestionAnswer;
 import com.eleks.academy.whoami.model.request.CharacterSuggestion;
 import com.eleks.academy.whoami.model.request.Message;
@@ -9,10 +8,9 @@ import com.eleks.academy.whoami.model.request.NewGameRequest;
 import com.eleks.academy.whoami.model.response.GameDetails;
 import com.eleks.academy.whoami.model.response.PlayerDetails;
 import com.eleks.academy.whoami.model.response.TurnDetails;
-import com.eleks.academy.whoami.repository.HistoryChat;
+import com.eleks.academy.whoami.core.impl.HistoryChat;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 public interface GameService {

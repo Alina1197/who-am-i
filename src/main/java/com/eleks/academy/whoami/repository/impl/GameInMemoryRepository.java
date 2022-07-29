@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -46,6 +45,15 @@ public class GameInMemoryRepository implements GameRepository {
 
     @Override
     public void deleteGame(String gameId) {
+        try {
+            Thread.sleep(7_000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        this.games.removeIf(game -> game.getGameId().equals(gameId));
+    }
+
+    public void quickDeleteGame (String gameId){
         this.games.removeIf(game -> game.getGameId().equals(gameId));
     }
 

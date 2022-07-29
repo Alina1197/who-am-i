@@ -6,14 +6,14 @@ import java.util.List;
 
 public interface Turn {
 
-	PersistentPlayer getCurrentPlayer();
+    PersistentPlayer getCurrentPlayer();
 
-	List<PersistentPlayer> getOtherPlayers();
+    List<PersistentPlayer> getOtherPlayers();
 
     Turn changeTurn();
 
-	void removePLayer(String playerId);
+    void removePLayer(String playerId);
 
-	List<PersistentPlayer> getAllPlayers();
+    List<PersistentPlayer> getAllPlayers();
 
 }
